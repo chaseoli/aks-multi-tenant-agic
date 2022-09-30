@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variables
-acrName="<your-azure-container-registry>"
+acrName="dapreg"
 imageName="syntheticapi"
 tag="latest"
 
@@ -13,12 +13,17 @@ echo "Logging to [$acrName] Azure Container Registry..."
 loginServer=$(az acr show --name $acrName --query loginServer --output tsv)
 
 # Tag the local image with the loginServer of ACR
-docker tag $imageName:$tag $loginServer/$imageName:$tag
+# docker tag $imageName:$tag $loginServer/$imageName:$tag
+docker tag  syntheticapi:latest dapreg.azurecr.io/syntheticapi:latest
 
 # Push local container image to ACR
-docker push $loginServer/$imageName:$tag
+# docker push $loginServer/$imageName:$tag
+docker push dapreg.azurecr.io/syntheticapi:latest
 
 # Show the repository
 echo "This is the [$imageName:$tag] container image in the [$acrName] Azure Container Registry:"
-az acr repository show --name $acrName \
-                       --image $imageName:$tag 
+# az acr repository show --name $acrName \
+#                        --image $imageName:$tag 
+
+az acr repository show --name dapreg \
+                       --image syntheticapi:latest

@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Variables
-tenants=("mars" "jupiter" "saturn")
-acrName="<your-azure-container-registry>"
-chart="../syntheticapi"
-imageName="${acrName,,}.azurecr.io/syntheticapi"
-imageTag="latest"
-dnsZoneName="<your-domain>" #e.g. contoso.com
-dnsZoneResourceGroupName="DnsResourceGroup"
-retries=150
-sleepInterval=2
+export tenants=("mars" "jupiter" "saturn")
+export acrName="dapreg"
+export chart="../syntheticapi"
+export imageName="dapreg.azurecr.io/syntheticapi"
+export imageTag="latest"
+export dnsZoneName="dapb6.com" #e.g. contoso.com
+export dnsZoneResourceGroupName="dap-rg"
+export retries=150
+export sleepInterval=2
 
 for tenant in ${tenants[@]}; do
 
@@ -23,6 +23,7 @@ for tenant in ${tenants[@]}; do
         echo "A [$tenant] Helm release already exists in the [$tenant] namespace"
         echo "Upgrading the [$tenant] Helm release to the [$tenant] namespace via Helm..."
         helm upgrade $tenant $chart \
+        --namespace $tenant \
         --set image.repository=$imageName \
         --set image.tag=$imageTag \
         --set nameOverride=$tenant \
@@ -47,6 +48,15 @@ for tenant in ${tenants[@]}; do
         --set nameOverride=$tenant \
         --set ingress.hosts[0].host=$hostname \
         --set ingress.tls[0].hosts[0]=$hostname
+
+        # helm install mars ../syntheticapi \
+        # --create-namespace \
+        # --namespace mars \
+        # --set image.repository=dapreg \
+        # --set image.tag=latest \
+        # --set nameOverride=mars \
+        # --set ingress.hosts[0].host=mars.dapb6.com \
+        # --set ingress.tls[0].hosts[0]=mars.dapb6.com
 
         if [[ $? == 0 ]]; then
             echo "[$tenant] Helm release successfully deployed to the [$tenant] namespace via Helm"

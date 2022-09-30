@@ -1,12 +1,12 @@
 #/bin/bash
 
 # Variables
-namespace="cert-manager"
-repoName="jetstack"
-repoUrl="https://charts.jetstack.io"
-chartName="cert-manager"
-releaseName="cert-manager"
-version="v1.7.2"
+export namespace="cert-manager"
+export repoName="jetstack"
+export repoUrl="https://charts.jetstack.io"
+export chartName="cert-manager"
+export releaseName="cert-manager"
+export version="v1.9.1"
 
 # Check if the ingress-nginx repository is not already added
 result=$(helm repo list | grep $repoName | awk '{print $1}')
@@ -31,10 +31,17 @@ if [[ -n $result ]]; then
 else
     # Install the cert-manager Helm chart
     echo "Deploying [$releaseName] cert-manager to the $namespace namespace..."
-    helm install $releaseName $repoName/$chartName \
-        --create-namespace \
-        --namespace $namespace \
-        --set installCRDs=true \
-        --set version $version \
-        --set nodeSelector."kubernetes\.io/os"=linux
+    # helm install $releaseName $repoName/$chartName \
+    #     --namespace $namespace \
+    #     --create-namespace \
+    #     --set version $version \
+    #     --set installCRDs=true 
+    #     --set nodeSelector."kubernetes\.io/os"=linux
+
+   helm install cert-manager jetstack/cert-manager \
+    --namespace cert-manager \
+    --create-namespace \
+    --version v1.9.1 \
+    --set installCRDs=true
+    --set nodeSelector."kubernetes\.io/os"=linux
 fi

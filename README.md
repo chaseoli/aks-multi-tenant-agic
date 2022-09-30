@@ -198,7 +198,7 @@ fi
 # Variables
 email="<your-email-address>"
 namespace="default"
-clusterIssuer="letsencrypt-application-gateway"
+clusterIssuer="letsencrypt-prod"
 template="cluster-issuer.yml"
 
 # Check if the cluster issuer already exists
@@ -221,7 +221,7 @@ The script uses the `cluster-issuer.yml` YAML manifest:
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
-  name: letsencrypt-application-gateway
+  name: letsencrypt-prod
 spec:
   acme:
 

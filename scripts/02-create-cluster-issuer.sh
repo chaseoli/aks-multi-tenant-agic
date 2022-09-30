@@ -1,9 +1,9 @@
 #/bin/bash
 
 # Variables
-email="<your-email-address>"
+email="warn@bravo6.io"
 namespace="default"
-clusterIssuer="letsencrypt-application-gateway"
+clusterIssuer="letsencrypt-prod"
 template="cluster-issuer.yml"
 
 # Check if the cluster issuer already exists

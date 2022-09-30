@@ -1,7 +1,7 @@
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: letsencrypt-application-gateway
+  name: letsencrypt-prod
 spec:
   acme:
 
@@ -14,7 +14,7 @@ spec:
     # You must replace this email address with your own.
     # Let's Encrypt will use this to contact you about expiring
     # certificates, and issues related to your account.
-    email: MY_EMAIL_ADDRESS
+    email: warn@bravo6.io
 
     privateKeySecretRef:
       # Secret resource used to store the account's private key.
