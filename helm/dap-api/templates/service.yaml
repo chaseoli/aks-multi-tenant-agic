@@ -1,0 +1,16 @@
+{{- $portName := include "dapapi.portName" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dapapi.fullname" . }}
+  labels:
+    {{- include "dapapi.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{.Values.targetCcontainerPort}}
+      protocol: TCP
+      name: {{ $portName }}
+  selector:
+    {{- include "dapapi.selectorLabels" . | nindent 4 }}

@@ -31,17 +31,11 @@ if [[ -n $result ]]; then
 else
     # Install the cert-manager Helm chart
     echo "Deploying [$releaseName] cert-manager to the $namespace namespace..."
-    # helm install $releaseName $repoName/$chartName \
-    #     --namespace $namespace \
-    #     --create-namespace \
-    #     --set version $version \
-    #     --set installCRDs=true 
-    #     --set nodeSelector."kubernetes\.io/os"=linux
+    helm install $releaseName $repoName/$chartName \
+        --namespace $namespace \
+        --create-namespace \
+        --set version $version \
+        --set installCRDs=true 
+        --set nodeSelector."kubernetes\.io/os"=linux
 
-   helm install cert-manager jetstack/cert-manager \
-    --namespace cert-manager \
-    --create-namespace \
-    --version v1.9.1 \
-    --set installCRDs=true
-    --set nodeSelector."kubernetes\.io/os"=linux
 fi

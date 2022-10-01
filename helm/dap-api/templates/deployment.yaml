@@ -1,17 +1,17 @@
-{{- $portName := include "syntheticapi.portName" . -}}
+{{- $portName := include "dapapi.portName" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "syntheticapi.fullname" . }}
+  name: {{ include "dapapi.fullname" . }}
   labels:
-    {{- include "syntheticapi.labels" . | nindent 4 }}
+    {{- include "dapapi.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "syntheticapi.selectorLabels" . | nindent 6 }}
+      {{- include "dapapi.selectorLabels" . | nindent 6 }}
   strategy:
     rollingUpdate:
       maxSurge: {{ .Values.strategy.rollingUpdate.maxSurge | default 1 }}
@@ -23,13 +23,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "syntheticapi.selectorLabels" . | nindent 8 }}
+        {{- include "dapapi.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "syntheticapi.serviceAccountName" . }}
+      serviceAccountName: {{ include "dapapi.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -40,7 +40,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: {{ $portName }}
-              containerPort: 80
+              containerPort: {{.Values.targetCcontainerPort}}
               protocol: TCP
           {{- with .Values.livenessProbe}}
           livenessProbe:

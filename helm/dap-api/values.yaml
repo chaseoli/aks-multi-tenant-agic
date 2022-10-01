@@ -1,11 +1,11 @@
-# Default values for syntheticapi.
+# Default values for dapapi.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 3
 
 image:
-  repository: nginx
+  repository: dapreg.azurecr.io/dap/api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -21,7 +21,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: "syntheticapi"
+  name: "dapapi"
 
 podAnnotations: {}
 
@@ -36,6 +36,8 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+targetCcontainerPort: 8080
+
 service:
   type: ClusterIP
   port: 80
@@ -48,10 +50,10 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     cert-manager.io/acme-challenge-type: http01
   hosts:
-  - host: syntheticapi.baborbird.com
+  - host: dapb6.com
   tls:
   - hosts:
-    - syntheticapi.baborbird.com
+    - dapb6.com
 
 resources: 
   requests:
@@ -69,7 +71,7 @@ autoscaling:
   targetMemoryUtilizationPercentage: 80
 
 nodeSelector:
-  "beta.kubernetes.io/os": linux
+  "kubernetes.io/os": linux
 
 topologySpreadConstraints:
 - maxSkew: 1
@@ -77,14 +79,14 @@ topologySpreadConstraints:
   whenUnsatisfiable: DoNotSchedule
   labelSelector:
     matchLabels:
-      app: syntheticapi
+      app: dapapi
       role: frontend
 - maxSkew: 1
   topologyKey: kubernetes.io/hostname
   whenUnsatisfiable: DoNotSchedule
   labelSelector:
     matchLabels:
-      app: syntheticapi
+      app: dapapi
       role: frontend
 
 strategy:
@@ -122,6 +124,8 @@ env:
   valueFrom:
     fieldRef:
       fieldPath: status.hostIP
+- name: PORT
+  value: "8080"
 
 tolerations: []
 

@@ -1,0 +1,315 @@
+NAME: api
+LAST DEPLOYED: Fri Sep 30 22:46:30 2022
+NAMESPACE: api
+STATUS: pending-install
+REVISION: 1
+USER-SUPPLIED VALUES:
+image:
+  repository: dapreg.azurecr.io/dap/api
+  tag: latest
+ingress:
+  hosts:
+  - host: api.dev.dapb6.com
+  tls:
+  - hosts:
+    - api.dev.dapb6.com
+nameOverride: api
+
+COMPUTED VALUES:
+affinity: {}
+autoscaling:
+  enabled: false
+  maxReplicas: 6
+  minReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+env:
+- name: POD_IP
+  valueFrom:
+    fieldRef:
+      fieldPath: status.podIP
+- name: HOST_IP
+  valueFrom:
+    fieldRef:
+      fieldPath: status.hostIP
+- name: PORT
+  value: "8080"
+fullnameOverride: ""
+image:
+  pullPolicy: IfNotPresent
+  repository: dapreg.azurecr.io/dap/api
+  tag: latest
+imagePullSecrets: []
+ingress:
+  annotations:
+    cert-manager.io/acme-challenge-type: http01
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: azure/application-gateway
+  enabled: true
+  hosts:
+  - host: api.dev.dapb6.com
+  tls:
+  - hosts:
+    - api.dev.dapb6.com
+livenessProbe:
+  failureThreshold: 1
+  httpGet:
+    path: /
+  initialDelaySeconds: 5
+  periodSeconds: 10
+nameOverride: api
+nodeSelector:
+  kubernetes.io/os: linux
+podAnnotations: {}
+podSecurityContext: {}
+readinessProbe:
+  failureThreshold: 1
+  httpGet:
+    path: /
+  initialDelaySeconds: 5
+  periodSeconds: 10
+replicaCount: 3
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 250m
+    memory: 64Mi
+securityContext: {}
+service:
+  port: 80
+  portName: http
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  create: true
+  name: dapapi
+startupProbe:
+  failureThreshold: 30
+  httpGet:
+    path: /
+  initialDelaySeconds: 5
+  periodSeconds: 10
+strategy:
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
+targetCcontainerPort: 8080
+tolerations: []
+topologySpreadConstraints:
+- labelSelector:
+    matchLabels:
+      app: dapapi
+      role: frontend
+  maxSkew: 1
+  topologyKey: topology.kubernetes.io/zone
+  whenUnsatisfiable: DoNotSchedule
+- labelSelector:
+    matchLabels:
+      app: dapapi
+      role: frontend
+  maxSkew: 1
+  topologyKey: kubernetes.io/hostname
+  whenUnsatisfiable: DoNotSchedule
+
+HOOKS:
+---
+# Source: dapapi/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "api-test-connection"
+  labels:
+    helm.sh/chart: dapapi-1.0.0-alpha
+    app.kubernetes.io/name: api
+    app.kubernetes.io/instance: api
+    app.kubernetes.io/version: "1.0.0-alpha"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['api:80']
+  restartPolicy: Never
+MANIFEST:
+---
+# Source: dapapi/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dapapi
+  labels:
+    helm.sh/chart: dapapi-1.0.0-alpha
+    app.kubernetes.io/name: api
+    app.kubernetes.io/instance: api
+    app.kubernetes.io/version: "1.0.0-alpha"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: dapapi/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  labels:
+    helm.sh/chart: dapapi-1.0.0-alpha
+    app.kubernetes.io/name: api
+    app.kubernetes.io/instance: api
+    app.kubernetes.io/version: "1.0.0-alpha"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: api
+    app.kubernetes.io/instance: api
+---
+# Source: dapapi/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    helm.sh/chart: dapapi-1.0.0-alpha
+    app.kubernetes.io/name: api
+    app.kubernetes.io/instance: api
+    app.kubernetes.io/version: "1.0.0-alpha"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api
+      app.kubernetes.io/instance: api
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api
+        app.kubernetes.io/instance: api
+    spec:
+      serviceAccountName: dapapi
+      securityContext:
+        {}
+      containers:
+        - name: dapapi
+          securityContext:
+            {}
+          image: "dapreg.azurecr.io/dap/api:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: http
+            failureThreshold: 1
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: http
+            failureThreshold: 1
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: "/"
+              port:  http
+            failureThreshold: 30
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: PORT
+              value: "8080"
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app: dapapi
+              role: frontend
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+        - labelSelector:
+            matchLabels:
+              app: dapapi
+              role: frontend
+          maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+      nodeSelector:
+        kubernetes.io/os: linux
+---
+# Source: dapapi/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api
+  labels:
+    helm.sh/chart: dapapi-1.0.0-alpha
+    app.kubernetes.io/name: api
+    app.kubernetes.io/instance: api
+    app.kubernetes.io/version: "1.0.0-alpha"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/acme-challenge-type: http01
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: azure/application-gateway
+spec:
+  tls:
+  - hosts:
+    - "api.dev.dapb6.com"
+    secretName: tls-secret
+  rules:
+    - host: "api.dev.dapb6.com"
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: api
+              port:
+                number: 80
+
+NOTES:
+API available at: 
+https://api.dev.dapb6.com
+
+Run the following to see deployed resources: 
+$ kubectl get pods -n api
+$ kubectl get services -n api
+$ kubectl get deployments -n api
+$ kubectl get ingress -n api
+$ kubectl describe ingress -n api
+
+Run the following to see container logs for a pod:
+$ podName=$(kubectl get pods -n api | awk 'FNR == 2 {print $1}'); kubectl logs $podName -n api

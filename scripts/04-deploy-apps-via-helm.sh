@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Variables
-export tenants=("mars" "jupiter" "saturn")
+export subSubDomain=api
+export tenants=("dev" "stage" "api")
 export acrName="dapreg"
-export chart="../syntheticapi"
-export imageName="dapreg.azurecr.io/syntheticapi"
-export imageTag="latest"
+export chart="../helm/dap-api" # TODO: move to dev library
+export imageName="dapreg.azurecr.io/dap/api"
+export imageTag="1.0.0-alpha"
 export dnsZoneName="dapb6.com" #e.g. contoso.com
 export dnsZoneResourceGroupName="dap-rg"
 export retries=150
@@ -16,7 +17,14 @@ for tenant in ${tenants[@]}; do
     # Check if the Helm release already exists
     echo "Checking if a [$tenant] Helm release exists in the [$tenant] namespace..."
     release=$(helm list -n $tenant | awk '{print $1}' | grep -Fx $tenant)
-    hostname="$tenant.$dnsZoneName"
+    hostname="$subSubDomain.$tenant.$dnsZoneName"
+
+    if [ "$tenant" == "api" ]; then
+        # if tenant is `api` then is a production release using sub-domain only (NO sub-sub-domain) 
+        hostname="$tenant.$dnsZoneName"    
+    fi
+
+    echo "Hostname is [$hostname]"
 
     if [[ -n $release ]]; then
         # Install the Helm chart for the tenant to a dedicated namespace
@@ -48,15 +56,6 @@ for tenant in ${tenants[@]}; do
         --set nameOverride=$tenant \
         --set ingress.hosts[0].host=$hostname \
         --set ingress.tls[0].hosts[0]=$hostname
-
-        # helm install mars ../syntheticapi \
-        # --create-namespace \
-        # --namespace mars \
-        # --set image.repository=dapreg \
-        # --set image.tag=latest \
-        # --set nameOverride=mars \
-        # --set ingress.hosts[0].host=mars.dapb6.com \
-        # --set ingress.tls[0].hosts[0]=mars.dapb6.com
 
         if [[ $? == 0 ]]; then
             echo "[$tenant] Helm release successfully deployed to the [$tenant] namespace via Helm"
